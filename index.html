@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1220">
+<meta name="description" content="دفتر كلماتي - احفظ كلماتك الإنجليزية ومعانيها وأمثلتها">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<title>دفتر كلماتي</title>
+<style>
+:root{--bg:#0b1220;--card:#172131;--line:#2a3950;--text:#eef3fb;--muted:#9aa8bb;--accent:#6d9df7}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif}
+.wrap{max-width:760px;margin:auto;padding:22px 16px 50px}.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+h1{font-size:28px;margin:0}.count{color:var(--muted);font-size:14px;margin-right:10px}.panel,.word{background:var(--card);border:1px solid var(--line);border-radius:18px}
+.panel{padding:18px;margin-bottom:18px}.panel h2{font-size:18px;margin:0 0 12px}label{display:block;color:var(--muted);font-size:13px;margin:10px 0 6px}
+input,textarea,select{width:100%;border:1px solid var(--line);background:#121b2a;color:var(--text);border-radius:12px;padding:12px;font:inherit;outline:none}
+textarea{min-height:95px;resize:vertical}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{border:0;border-radius:12px;padding:11px 16px;font:inherit;cursor:pointer}.primary{background:var(--accent);color:#07111f;font-weight:700;margin-top:12px}
+.search{margin:12px 0}.chips{display:flex;gap:8px;overflow:auto;padding:4px 0 12px}.chip{white-space:nowrap;background:transparent;color:var(--muted);border:1px solid var(--line);padding:8px 13px}.chip.active{color:var(--text);border-color:var(--accent)}
+.word{padding:17px;margin:10px 0}.wordhead{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:12px}
+.en{font-size:22px;font-weight:800}.ar{font-size:16px;margin-top:7px}.tag{border:1px solid #66c8f5;color:#66c8f5;border-radius:20px;padding:4px 10px;font-size:12px}
+.meta{color:var(--muted);font-size:13px;margin-top:13px}.actions{display:flex;gap:8px;margin-top:12px}.small{background:#223047;color:var(--text);padding:8px 11px}.del{background:#3a2026;color:#ffaaaa}
+.empty{color:var(--muted);text-align:center;padding:30px}.note{color:var(--muted);font-size:12px;line-height:1.6;margin-top:8px}
+#installBtn{display:none;margin-top:10px;background:#263d62;color:#fff;width:100%}
+@media(max-width:520px){.row{grid-template-columns:1fr}h1{font-size:25px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top"><h1>دفتر كلماتي <span class="count" id="count"></span></h1><div>📖</div></div>
+<section class="panel">
+<h2>➕ أضف كلمة</h2>
+<div class="row">
+<div><label>الكلمة بالإنجليزية</label><input id="en" placeholder="مثلاً: achieve"></div>
+<div><label>المعنى بالعربي</label><input id="ar" placeholder="مثلاً: يحقق"></div>
+</div>
+<label>الشرح / مثال</label><textarea id="note" placeholder="اكتب شرحاً أو جملة مثال..."></textarea>
+<div class="row">
+<div><label>التصنيف</label><select id="cat"><option>غير مصنف</option><option>ضمير</option><option>فعل</option><option>اسم</option><option>صفة</option><option>ظرف/حال</option><option>حرف جر</option><option>روابط</option></select></div>
+<div><label>النطق (اختياري)</label><input id="pron" placeholder="مثلاً: əˈtʃiːv"></div>
+</div>
+<button class="primary" onclick="addWord()">حفظ الكلمة</button>
+<button id="installBtn" onclick="installApp()">📲 إضافة دفتر كلماتي إلى الشاشة الرئيسية</button>
+<div class="note">تُحفظ الكلمات على جهازك داخل المتصفح.</div>
+</section>
+<input class="search" id="search" placeholder="🔎 ابحث بالعربي أو الإنجليزي..." oninput="render()">
+<div class="chips" id="chips"></div><main id="list"></main>
+</div>
+<script>
+const seed=[
+{en:"His",ar:"له / خاص به",note:"ضمير ملكية للمذكر. مثال: This is his book.",cat:"ضمير",pron:"hɪz"},
+{en:"Achieve",ar:"يحقق / ينجز",note:"To successfully reach a goal.",cat:"فعل",pron:"əˈtʃiːv"},
+{en:"However",ar:"ومع ذلك",note:"تُستخدم لبيان التباين بين فكرتين.",cat:"روابط",pron:"haʊˈevər"}];
+let words=JSON.parse(localStorage.getItem("myWords")||"null")||seed,active="الكل",deferredPrompt=null;
+function save(){localStorage.setItem("myWords",JSON.stringify(words))}
+function addWord(){let en=document.getElementById("en").value.trim(),ar=document.getElementById("ar").value.trim();if(!en||!ar){alert("اكتب الكلمة والمعنى أولاً");return}words.unshift({en,ar,note:note.value.trim(),cat:cat.value,pron:pron.value.trim()});save();["en","ar","note","pron"].forEach(id=>document.getElementById(id).value="");render()}
+function del(i){words.splice(i,1);save();render()}
+function edit(i){let w=words[i],en=prompt("الكلمة بالإنجليزية:",w.en);if(en===null)return;let ar=prompt("المعنى بالعربي:",w.ar);if(ar===null)return;w.en=en.trim();w.ar=ar.trim();save();render()}
+function render(){let q=search.value.toLowerCase(),cats=["الكل",...new Set(words.map(w=>w.cat))];chips.innerHTML=cats.map(c=>`<button class="chip ${c===active?"active":""}" onclick="active=${JSON.stringify(c)};render()">${c}</button>`).join("");let shown=words.map((w,i)=>({w,i})).filter(x=>(active==="الكل"||x.w.cat===active)&&(!q||JSON.stringify(x.w).toLowerCase().includes(q)));count.textContent=`${words.length} كلمة`;list.innerHTML=shown.length?shown.map(({w,i})=>`<article class="word"><div class="wordhead"><div><div class="en">${esc(w.en)}</div><div class="ar">${esc(w.ar)}</div></div><span class="tag">${esc(w.cat)}</span></div>${w.pron?`<div class="meta">النطق: ${esc(w.pron)}</div>`:""}${w.note?`<div class="meta">${esc(w.note)}</div>`:""}<div class="actions"><button class="small" onclick="edit(${i})">تعديل</button><button class="del" onclick="del(${i})">حذف</button></div></article>`).join(""):`<div class="empty">ماكو كلمات مطابقة حالياً.</div>`}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;installBtn.style.display="block"});
+async function installApp(){if(!deferredPrompt){alert("إذا ما ظهر التثبيت، افتح قائمة المتصفح واختر «إضافة إلى الشاشة الرئيسية».");return}deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;installBtn.style.display="none"}
+window.addEventListener("appinstalled",()=>installBtn.style.display="none");
+if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js"));
+render();
+</script>
+</body>
+</html>
