@@ -1,12 +1,12 @@
-function pass(w){return(!flt||(flt==="none"?!w.pos:w.pos===flt))&&(!view||w.fav)}
+function pass(w){return inMode(w)&&(!flt||(flt==="none"?!w.pos:w.pos===flt))&&(!view||w.fav)}
 function chips(arr,cur,at){return arr.map(function(t){return '<button class="chip'+(cur===t[0]?" on":"")+'" '+at+'="'+esc(t[0])+'">'+esc(t[1])+'</button>'}).join("")}
-function dueN(){var n=Date.now();return words.filter(function(w){return(w.due||0)<=n}).length}
+function dueN(){var n=Date.now();return words.filter(function(w){return inMode(w)&&(w.due||0)<=n}).length}
 function renderStats(){
-  var c={},fv=0;words.forEach(function(w){var k=w.pos||"none";c[k]=(c[k]||0)+1;if(w.fav)fv++});
-  var top=words.filter(function(w){return w.rev>0}).sort(function(a,b){return b.rev-a.rev}).slice(0,5);
-  var bad=words.filter(function(w){return w.miss>0}).sort(function(a,b){return b.miss-a.miss}).slice(0,5);
+  var ws=words.filter(inMode),c={},fv=0;ws.forEach(function(w){var k=w.pos||"none";c[k]=(c[k]||0)+1;if(w.fav)fv++});
+  var top=ws.filter(function(w){return w.rev>0}).sort(function(a,b){return b.rev-a.rev}).slice(0,5);
+  var bad=ws.filter(function(w){return w.miss>0}).sort(function(a,b){return b.miss-a.miss}).slice(0,5);
   function ol(a,k,u){return a.length?'<ol>'+a.map(function(w){return '<li><span dir="ltr">'+esc(w.word)+'</span> — '+w[k]+' '+u+'</li>'}).join("")+'</ol>':'<p class="hint">لسا ماكو بيانات. ابدأ مراجعة.</p>'}
-  $("stats").innerHTML='<p>إجمالي الكلمات: <b>'+words.length+'</b> · المفضلة: <b>'+fv+'</b> · 🔥 سلسلة المراجعة: <b>'+streak()+'</b> يوم</p><div class="bar">'+Object.keys(POS).concat(["none"]).map(function(k){return c[k]?'<span class="pos '+k+'">'+(POS[k]||"غير مصنف")+': '+c[k]+'</span>':""}).join("")+'</div><b>أكثر الكلمات اللي راجعتها</b>'+ol(top,"rev","مرة")+'<b>تحتاج مراجعة أكثر</b>'+ol(bad,"miss","خطأ");
+  $("stats").innerHTML='<p>إجمالي '+(mode==='i'?'العبارات':'الكلمات')+': <b>'+ws.length+'</b> · المفضلة: <b>'+fv+'</b> · 🔥 سلسلة المراجعة: <b>'+streak()+'</b> يوم</p><div class="bar">'+Object.keys(P()).concat(["none"]).map(function(k){return c[k]?'<span class="pos '+k+'">'+(P()[k]||"غير مصنف")+': '+c[k]+'</span>':""}).join("")+'</div><b>أكثر الكلمات اللي راجعتها</b>'+ol(top,"rev","مرة")+'<b>تحتاج مراجعة أكثر</b>'+ol(bad,"miss","خطأ");
 }
 function render(){
   var q=norm($("q").value.trim()),out="",n=0;
@@ -15,25 +15,26 @@ function render(){
     if(q&&norm(w.text).indexOf(q)<0)return;
     n++;
     var isOpen=!!open[w.id]||(q&&true);
-    out+='<div class="card '+(w.pos||"")+'"><div class="hd" tabindex="0" role="button" data-t="'+w.id+'"><span class="w">'+hlText(w.word,q)+'</span><span class="m" dir="auto">'+esc(preview(w.text))+'</span>'+(w.pos?'<span class="pos '+w.pos+'">'+POS[w.pos]+'</span>':'')+(w.fav?'⭐':'')+'<button class="ic" data-sp="'+w.id+'" aria-label="نطق">🔊</button></div>';
+    out+='<div class="card '+(w.pos||"")+'"><div class="hd" tabindex="0" role="button" data-t="'+w.id+'"><span class="w">'+hlText(w.word,q)+'</span><span class="m" dir="auto">'+esc(preview(w.text))+'</span>'+(w.pos?'<span class="pos '+w.pos+'">'+P()[w.pos]+'</span>':'')+(w.fav?'⭐':'')+'<button class="ic" data-sp="'+w.id+'" aria-label="نطق">🔊</button></div>';
     if(isOpen){
       out+='<div class="bd">';
       if(editId===w.id){
         out+='<textarea id="ed" style="margin-top:10px">'+esc(w.text)+'</textarea><div class="bar"><button data-sv="'+w.id+'">حفظ التعديل</button><button class="alt" data-cn="1">إلغاء</button></div>';
       }else{
-        out+=body(w.text,q)+(w.guess?'<div class="hint">التصنيف تخمين من شكل الكلمة. غيّره إذا غلط.</div>':'')+'<div class="bar"><button class="alt" data-ed="'+w.id+'">تعديل</button><button class="alt" data-cp="'+w.id+'">نسخ</button><select class="cls" data-ps="'+w.id+'" aria-label="التصنيف"><option value="" selected hidden>التصنيف</option>'+Object.keys(POS).map(function(k){return '<option value="'+k+'">'+(w.pos===k?'✓ ':'')+POS[k]+'</option>'}).join("")+'<option value="none">'+(w.pos?'':'✓ ')+'غير مصنف</option></select><button class="alt" data-fv="'+w.id+'">'+(w.fav?'★ مفضلة':'☆ مفضلة')+'</button><button class="dg" data-dl="'+w.id+'">حذف</button></div>';
+        out+=body(w.text,q)+(w.guess?'<div class="hint">التصنيف تخمين. غيّره إذا غلط.</div>':'')+'<div class="bar"><button class="alt" data-ed="'+w.id+'">تعديل</button><button class="alt" data-cp="'+w.id+'">نسخ</button><select class="cls" data-ps="'+w.id+'" aria-label="التصنيف"><option value="" selected hidden>التصنيف</option>'+Object.keys(P()).map(function(k){return '<option value="'+k+'">'+(w.pos===k?'✓ ':'')+P()[k]+'</option>'}).join("")+'<option value="none">'+(w.pos?'':'✓ ')+'غير مصنف</option></select><button class="alt" data-fv="'+w.id+'">'+(w.fav?'★ مفضلة':'☆ مفضلة')+'</button><button class="dg" data-dl="'+w.id+'">حذف</button></div>';
       }
       out+='</div>';
     }
     out+='</div>';
   });
   $("list").innerHTML=out;
-  $("empty").hidden=words.length>0;
-  $("total").textContent=words.length?words.length+" كلمة":"";
+  $("empty").hidden=words.some(inMode);
+  var nw=words.filter(function(w){return(w.k||"w")==="w"}).length,ni=words.length-nw;
+  $("tw").innerHTML='<span class="ti">📒</span> دفتر كلماتي'+(nw?' ('+nw+')':'');$("ti").innerHTML='<span class="ti">💬</span> idioms'+(ni?' ('+ni+')':'');
   $("chips2").innerHTML=chips([["","الكل"],["fav","⭐ المفضلة"]],view,"data-v");
-  $("chips").innerHTML=chips([["","كل الأنواع"],["noun","اسم"],["verb","فعل"],["adj","صفة"],["adv","ظرف/حال"],["pron","ضمير"],["prep","حرف جر"],["conj","روابط"],["none","غير مصنف"]],flt,"data-f");
+  $("chips").innerHTML=chips([["",mode==="i"?"كل الفئات":"كل الأنواع"]].concat(Object.keys(P()).map(function(k){return[k,P()[k]]})).concat([["none","غير مصنف"]]),flt,"data-f");
   $("cnt").textContent=(q||flt||view)?("النتائج: "+n):"";
-  $("panel").innerHTML=words.length?'<div class="panel"><div>🔥 سلسلة المراجعة: <b>'+streak()+'</b> يوم</div><div>عندك <b>'+dueN()+'</b> كلمة للمراجعة اليوم</div><div class="bar"><button id="qz2">ابدأ جلسة مراجعة سريعة</button></div></div>':"";
+  $("panel").innerHTML=words.length?'<div class="panel"><div>🔥 سلسلة المراجعة: <b>'+streak()+'</b> يوم</div><div>عندك <b>'+dueN()+'</b> '+(mode==='i'?'عبارة':'كلمة')+' للمراجعة اليوم</div><div class="bar"><button id="qz2">ابدأ جلسة مراجعة سريعة</button></div></div>':"";
   $("acc").textContent=cfg.acc==="en-GB"?"🇬🇧 بريطاني":"🇺🇸 أمريكي";
   renderStats();
 }
@@ -66,7 +67,6 @@ $("chips").onclick=function(e){var b=e.target.closest(".chip");if(!b)return;flt=
 $("chips2").onclick=function(e){var b=e.target.closest(".chip");if(!b)return;view=b.dataset.v;render()};
 $("acc").onclick=function(){cfg.acc=cfg.acc==="en-GB"?"en-US":"en-GB";save();render();speak("hello")};
 $("th").onchange=function(){cfg.theme=this.value;applyTheme();save()};
-$("pr").onclick=function(){copyText("اشرح لي الكلمة الإنجليزية: [الكلمة]\nاكتب الشرح بهذا الترتيب بالضبط وبدون جداول:\nالسطر الأول: الكلمة /النطق IPA/ 🇬🇧\nتعني: المعنى بالعربي\nنوع الكلمة: (اسم أو فعل أو صفة أو ظرف/حال أو ضمير أو حرف جر أو روابط)\nشرح قصير بالعربي\nمثالان بالإنجليزي مع ترجمتهما\nكلمات مرتبطة: كلمة /نطق/ = معنى","انتسخ البرومبت. بدّل [الكلمة] والصقه بـ ChatGPT")};
 $("ex").onclick=function(){try{var bl=new Blob([JSON.stringify(words)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(bl);a.download="my-words.json";document.body.appendChild(a);a.click();document.body.removeChild(a);say("بدأ التنزيل. إذا ما نزل شي، استخدم زر انسخ.")}catch(e){say("التنزيل مو متاح هنا. استخدم زر انسخ.")}};
 $("imp").onchange=function(){var f=this.files[0];if(!f)return;var r=new FileReader();r.onload=function(){$("bak").value=r.result;$("bkd").open=true;say("انقرأ الملف. اضغط استرجاع.")};r.onerror=function(){say("ما كدرت أقرأ الملف.")};r.readAsText(f);this.value=""};
 function shuf(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
@@ -82,7 +82,7 @@ function nextQ(){
   qq.i++;qq.fb=null;
   if(qq.i>=qq.ids.length){showQ();return}
   var w=words[find(qq.ids[qq.i])],t=qq.mode==="mix"?(Math.random()<.5?"type":"choice"):qq.mode;
-  var ms=shuf(words.filter(function(x){return x.id!==w.id&&preview(x.text)}).map(mean)).filter(function(m,i,ar){return ar.indexOf(m)===i&&m!==mean(w)});
+  var ms=shuf(words.filter(function(x){return inMode(x)&&x.id!==w.id&&preview(x.text)}).map(mean)).filter(function(m,i,ar){return ar.indexOf(m)===i&&m!==mean(w)});
   if(t==="choice"&&ms.length<3)t="type";
   qq.t=t;qq.opts=t==="choice"?shuf([mean(w)].concat(ms.slice(0,3))):null;showQ();
 }
@@ -90,7 +90,7 @@ function sh(s){return s.length>80?s.slice(0,80)+"…":s}
 function showQ(){
   var el=$("quiz");el.style.display="flex";
   if(!qq.mode){
-    el.innerHTML='<div class="qc"><h2>🧠 مراجعة</h2><p>'+(qq.all?'ماكو كلمات مستحقة هسه، راح أدرّبك على كلماتك.':'كلمات مستحقة للمراجعة: '+qq.pool.length)+'</p><button class="big" data-m="mix">مزج</button><button class="big alt" data-m="type">معنى ← اكتب الكلمة</button><button class="big alt" data-m="choice">كلمة ← اختر المعنى</button><button class="alt" id="qx" style="margin-top:14px">رجوع</button></div>';return}
+    el.innerHTML='<div class="qc"><h2>🧠 مراجعة</h2><p>'+(qq.all?'ماكو كلمات مستحقة هسه، راح أدرّبك على كلماتك.':'كلمات مستحقة للمراجعة: '+qq.pool.length)+'</p><button class="big" data-m="mix">مزج</button><button class="big alt" data-m="type">معنى ← اكتب '+(mode==='i'?'العبارة':'الكلمة')+'</button><button class="big alt" data-m="choice">'+(mode==='i'?'عبارة':'كلمة')+' ← اختر المعنى</button><button class="alt" id="qx" style="margin-top:14px">رجوع</button></div>';return}
   if(qq.i>=qq.ids.length){
     el.innerHTML='<div class="qc"><h2>خلصت الجلسة 🎉</h2><p>عرفت '+qq.ok+' من '+qq.n+' من أول مرة</p><button class="big" id="qx">رجوع</button></div>';return}
   var w=words[find(qq.ids[qq.i])],h='<div class="qc"><div class="hint">'+(qq.i+1)+' / '+qq.ids.length+'</div>';
@@ -99,7 +99,7 @@ function showQ(){
     if(qq.t==="choice")h+=qq.opts.map(function(o,i){return '<div class="opt'+(o===mean(w)?' ok':(i===qq.fb.pick?' bad':''))+'" dir="auto">'+esc(sh(o))+'</div>'}).join("");
     h+='<button class="big" id="qnx">التالي ←</button>';
   }else if(qq.t==="type"){
-    h+='<div class="hint">اكتب الكلمة الإنجليزية لهذا المعنى</div><div class="qb" dir="auto">'+esc(mean(w))+'</div><input id="qa" dir="ltr" placeholder="الكلمة بالإنجليزي" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="big" id="qck">تحقق</button><button class="big alt" id="qdk">ما أعرف</button>';
+    h+='<div class="hint">اكتب الإنجليزية لهذا المعنى</div><div class="qb" dir="auto">'+esc(mean(w))+'</div><input id="qa" dir="ltr" placeholder="الكلمة بالإنجليزي" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="big" id="qck">تحقق</button><button class="big alt" id="qdk">ما أعرف</button>';
   }else{
     h+='<div class="qw">'+esc(w.word)+'</div><button class="ic" data-sp="'+w.id+'" aria-label="نطق" style="font-size:30px">🔊</button><div class="hint">اختر المعنى الصحيح</div>'+qq.opts.map(function(o,i){return '<button class="opt" data-o="'+i+'" dir="auto">'+esc(sh(o))+'</button>'}).join("");
   }
@@ -140,12 +140,24 @@ $("list").onchange=function(e){
   var s=e.target.closest("[data-ps]");if(!s||!s.value)return;var w=words[find(s.dataset.ps)];w.pos=s.value==="none"?"":s.value;w.guess=false;w.man=true;save();render()};
 $("ov").onclick=function(){this.style.display="none"};
 $("mk").onclick=function(){$("bak").value=JSON.stringify(words)};
-$("shall").onclick=function(){if(!words.length){say("ماكو كلمات للمشاركة.");return}shareText(words.map(function(w){return w.text}).join("\n---\n"))};
+$("shall").onclick=function(){if(!words.length){say("ماكو كلمات للمشاركة.");return}shareText(words.filter(inMode).map(function(w){return w.text}).join("\n---\n"))};
 $("cp").onclick=function(){var t=$("bak");if(!t.value)$("mk").click();copyText(t.value,"اننسخ الدفتر")};
 $("rs").onclick=function(){
   var raw=$("bak").value.trim(),d;
   try{d=JSON.parse(raw);if(!Array.isArray(d))throw 0}catch(e){d=raw.split(/^\s*-{3,}\s*$/m).map(function(x){return x.trim()}).filter(Boolean)}
   if(!d.length){say("الصق النسخة أول.");return}
-  ask("يضيف "+d.length+" كلمة للموجودة. تكمل؟",function(){d.forEach(function(t){var nw;if(typeof t==="string")nw=newWord(t);else if(t&&t.text){nw=newWord(t.text);["fav","box","due","rev","miss","at","man"].forEach(function(k){if(t[k]!==undefined)nw[k]=t[k]});if(t.pos!==undefined){nw.pos=t.pos;nw.guess=false}}else return;words.push(nw)});save();render();say("انضافت "+d.length+" كلمة")});
+  ask("يضيف "+d.length+" كلمة للموجودة. تكمل؟",function(){d.forEach(function(t){var nw;if(typeof t==="string")nw=newWord(t);else if(t&&t.text){nw=newWord(t.text);["fav","box","due","rev","miss","at","man","k"].forEach(function(k){if(t[k]!==undefined)nw[k]=t[k]});if(t.pos!==undefined){nw.pos=t.pos;nw.guess=false}}else return;words.push(nw)});save();render();say("انضافت "+d.length+" كلمة")});
 };
-openDB(function(){load(function(){applyTheme();render()})});
+function applyMode(){
+  var I=mode==="i";
+  $("tw").className="tab"+(I?"":" on");$("ti").className="tab"+(I?" on":"");
+  $("sm").textContent=I?"➕ أضف idiom":"➕ أضف كلمة";
+  $("q").placeholder=I?"ابحث عن عبارة بالعربي أو الإنجليزي...":"ابحث بالعربي أو الإنجليزي بأي مكان من الشرح...";
+  $("empty").textContent=I?"ماكو عبارات بعد. الصق أول شرح فوق.":"ماكو كلمات بعد. الصق أول شرح فوق.";
+  $("qz").textContent=I?"🧠 مراجعة العبارات":"🧠 مراجعة";
+  render();
+}
+function setMode(m){mode=m;cfg.mode=m;flt="";view="";$("q").value="";editId=null;save();applyMode()}
+$("tw").onclick=function(){setMode("w")};
+$("ti").onclick=function(){setMode("i")};
+openDB(function(){load(function(){applyTheme();mode=cfg.mode||"w";applyMode()})});
