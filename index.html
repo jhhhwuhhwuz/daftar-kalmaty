@@ -44,6 +44,8 @@ mark{background:var(--hl);color:inherit;border-radius:3px;padding:0 2px}
 .chip{flex:0 0 auto;background:transparent;color:var(--mute);border:1.5px solid var(--line);padding:3px 12px}
 .chip.on{background:var(--acc);color:#fff;border-color:var(--acc)}
 select{font:inherit;color:var(--ink);background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:6px 10px}
+select.cls{-webkit-appearance:none;appearance:none;background:transparent;color:var(--acc);border:1.5px solid var(--acc);border-radius:10px;padding:8px 14px;font:inherit;font-weight:600;cursor:pointer;text-align:center;text-align-last:center}
+select.cls option{background:var(--card);color:var(--ink)}
 #toast{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));inset-inline:16px;margin:auto;max-width:360px;background:var(--ink);color:var(--bg);border-radius:10px;padding:10px 14px;text-align:center;font-weight:600;display:none;z-index:40}
 .pos.pron{color:#0369a1;border-color:#0369a1}.pos.prep{color:#4d7c0f;border-color:#4d7c0f}.pos.conj{color:#a21caf;border-color:#a21caf}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pos.pron{color:#7dd3fc;border-color:#7dd3fc}:root:not([data-theme="light"]) .pos.prep{color:#bef264;border-color:#bef264}:root:not([data-theme="light"]) .pos.conj{color:#f0abfc;border-color:#f0abfc}}
@@ -153,7 +155,7 @@ function render(){
         out+='<textarea id="ed" style="margin-top:10px">'+esc(w.text)+'</textarea><div class="bar"><button data-sv="'+w.id+'">حفظ التعديل</button><button class="alt" data-cn="1">إلغاء</button></div>';
       }else{
         out+=body(w.text,q);
-        out+='<div class="bar"><label>التصنيف: <select data-ps="'+w.id+'"><option value="">غير مصنف</option>'+Object.keys(POS).map(function(k){return '<option value="'+k+'"'+(w.pos===k?' selected':'')+'>'+POS[k]+'</option>'}).join("")+'</select></label></div>'+(w.guess?'<div class="hint">التصنيف تخمين من شكل الكلمة. غيّره إذا غلط.</div>':'')+'<div class="bar"><button class="alt" data-ed="'+w.id+'">تعديل</button><button class="alt" data-cp="'+w.id+'">نسخ</button><button class="alt" data-sh="'+w.id+'">مشاركة</button><button class="dg" data-dl="'+w.id+'">حذف</button></div>';
+        out+=(w.guess?'<div class="hint">التصنيف تخمين من شكل الكلمة. غيّره إذا غلط.</div>':'')+'<div class="bar"><button class="alt" data-ed="'+w.id+'">تعديل</button><button class="alt" data-cp="'+w.id+'">نسخ</button><select class="cls" data-ps="'+w.id+'" aria-label="التصنيف"><option value="" selected hidden>التصنيف</option>'+Object.keys(POS).map(function(k){return '<option value="'+k+'">'+(w.pos===k?'✓ ':'')+POS[k]+'</option>'}).join("")+'<option value="none">'+(w.pos?'':'✓ ')+'غير مصنف</option></select><button class="dg" data-dl="'+w.id+'">حذف</button></div>';
       }
       out+='</div>';
     }
@@ -199,7 +201,7 @@ function shareText(t){
   else copyText(t,"المشاركة مو متاحة هنا، اننسخ النص وتكدر تلصقه بأي مكان");
 }
 $("list").onchange=function(e){
-  var s=e.target.closest("[data-ps]");if(!s)return;var w=words[find(s.dataset.ps)];w.pos=s.value;w.guess=false;save();render()};
+  var s=e.target.closest("[data-ps]");if(!s||!s.value)return;var w=words[find(s.dataset.ps)];w.pos=s.value==="none"?"":s.value;w.guess=false;save();render()};
 $("ov").onclick=function(){this.style.display="none"};
 $("mk").onclick=function(){$("bak").value=words.map(function(w){return w.text}).join("\n---\n")};
 $("shall").onclick=function(){if(!words.length){say("ماكو كلمات للمشاركة.");return}shareText(words.map(function(w){return w.text}).join("\n---\n"))};
