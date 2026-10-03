@@ -1,6 +1,6 @@
 window.onerror=function(m,u,l){var d=document.getElementById("err");if(!d){d=document.createElement("div");d.id="err";d.style.cssText="position:fixed;top:0;left:0;right:0;background:#b91c1c;color:#fff;padding:8px;z-index:99;font-size:13px;direction:ltr";document.body.appendChild(d)}d.textContent="Error: "+m+" (line "+l+" of "+u.split("/").pop()+")"};
 var $=function(i){return document.getElementById(i)};
-var cfg={acc:"en-GB",theme:"auto",days:[]},view="",qq=null,last=null,POS={noun:"اسم",verb:"فعل",adj:"صفة",adv:"ظرف/حال",pron:"ضمير",prep:"حرف جر",conj:"روابط"},flt="",words=[],open={},editId=null,imgFor=null,db=null,timer=null;
+var mode="w",IDM={inf:"غير رسمي",frm:"رسمي",biz:"عمل",emo:"مشاعر",gen:"عام"},cfg={acc:"en-GB",theme:"auto",days:[]},view="",qq=null,last=null,POS={noun:"اسم",verb:"فعل",adj:"صفة",adv:"ظرف/حال",pron:"ضمير",prep:"حرف جر",conj:"روابط"},flt="",words=[],open={},editId=null,imgFor=null,db=null,timer=null;
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
 var tt=null;
 function say(t){$("msg").textContent=t;if(!t)return;var e=$("toast");e.textContent=t;e.style.display="block";clearTimeout(tt);tt=setTimeout(function(){e.style.display="none"},2500)}
@@ -53,8 +53,21 @@ function detectPos(t,word){
   if(k.length>3&&/y$/.test(k))return g("adj");
   return g("noun");
 }
-function setPos(w){var d=detectPos(w.text,w.word);w.pos=d.pos;w.guess=d.guess}
-function newWord(t){var w={id:uid(),word:headword(t),text:t,fav:false,box:0,due:0,rev:0,miss:0,at:Date.now()};setPos(w);return w}
+function P(){return mode==="i"?IDM:POS}
+function inMode(w){return(w.k||"w")===mode}
+function detectIdm(t){
+  var m=t.match(/(?:درجة الرسمية|الفئة|النوع|التصنيف)\s*[:：-]?\s*([^\n]*)/),z=m?m[1].toLowerCase():"";
+  function f(x){if(/غير رسمي|informal|عامي|slang/.test(x))return"inf";if(/رسمي|formal/.test(x))return"frm";if(/عمل|business|وظيف/.test(x))return"biz";if(/مشاعر|emotion|feeling/.test(x))return"emo";if(/عام|general|neutral/.test(x))return"gen";return""}
+  var a=f(z);if(a)return{pos:a,guess:false};
+  var s=t.toLowerCase();
+  if(/informal|slang|غير رسمي/.test(s))return{pos:"inf",guess:true};
+  if(/\bformal|رسمي/.test(s))return{pos:"frm",guess:true};
+  if(/business|\bwork|\bjob|office|boss|company|عمل|وظيف|شركة|مدير/.test(s))return{pos:"biz",guess:true};
+  if(/\blove|angry|happy|\bsad|fear|\bjoy|\bmad\b|مشاعر|حزن|فرح|غضب|حب|خوف/.test(s))return{pos:"emo",guess:true};
+  return{pos:"gen",guess:true};
+}
+function setPos(w){var d=(w.k==="i")?detectIdm(w.text):detectPos(w.text,w.word);w.pos=d.pos;w.guess=d.guess}
+function newWord(t){var w={id:uid(),k:mode,word:headword(t),text:t,fav:false,box:0,due:0,rev:0,miss:0,at:Date.now()};setPos(w);return w}
 function dkey(d){return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
 function streak(){var set={};(cfg.days||[]).forEach(function(k){set[k]=1});var d=new Date(),c=0;if(!set[dkey(d)])d.setDate(d.getDate()-1);while(set[dkey(d)]){c++;d.setDate(d.getDate()-1)}return c}
 function hlText(s,q){
@@ -66,7 +79,7 @@ function hlText(s,q){
 function body(t,q){
   return t.split(/\r?\n/).map(function(l,i){
     if(!l.trim())return "";
-    var k=/^(تعني|تُستخدم|تستخدم|كلمات مرتبطة|🔹)/.test(l.trim())||(i===0);
+    var k=/^(تعني|المعنى الحرفي|مثل عربي|درجة الرسمية|أصل العبارة|مثال|تُستخدم|تستخدم|كلمات مرتبطة|عبارات مشابهة|🔹)/.test(l.trim())||(i===0);
     var s=hlText(l.replace(/\*\*/g,""),q);
     return '<div class="l'+(k&&i>0?" k":"")+'" dir="auto">'+s+'</div>';
   }).join("");
