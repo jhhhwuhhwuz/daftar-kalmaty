@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>دفتر كلماتي</title>
+<title>دفتر كلماتي الذكي</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#f2f5f8;--card:#fff;--ink:#14213d;--mute:#5b6b82;--line:#d6dde6;--acc:#1d4ed8;--hl:#ffd23f;--danger:#c0392b;
@@ -54,6 +54,23 @@ select.cls option{background:var(--card);color:var(--ink)}
 #dlg p{margin:0 0 14px;font-weight:600}
 #ov{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;align-items:center;justify-content:center;z-index:20;padding:12px}
 #ov img{max-width:100%;max-height:100%}
+.card.noun{border-inline-start:5px solid #14b8a6}.card.verb{border-inline-start:5px solid #f59e0b}.card.adj{border-inline-start:5px solid #8b5cf6}.card.adv{border-inline-start:5px solid #ec4899}.card.pron{border-inline-start:5px solid #0ea5e9}.card.prep{border-inline-start:5px solid #84cc16}.card.conj{border-inline-start:5px solid #d946ef}
+:root[data-theme="green"]{--bg:#eef6f0;--card:#fff;--ink:#14301f;--mute:#4f6b58;--line:#cfe0d3;--acc:#15803d;--hl:#ffd23f;--danger:#c0392b}
+.tb{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:8px 0}
+.panel .bar{margin:8px 0 0}
+.ic{background:transparent;border:0;padding:0 4px;font-size:18px;color:inherit}
+#quiz{position:fixed;inset:0;background:var(--bg);z-index:25;display:none;flex-direction:column;padding:16px;padding-top:calc(16px + env(safe-area-inset-top,0px));overflow:auto}
+#quiz .qc{margin:auto;width:100%;max-width:560px;text-align:center}
+#quiz .qw{direction:ltr;font-size:34px;font-weight:800;color:var(--acc)}
+#quiz .qb{text-align:start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:14px 0}
+.big{width:100%;padding:12px;font-size:17px;margin-top:8px}
+.opt{width:100%;text-align:start;background:var(--card);color:var(--ink);border:1.5px solid var(--line);margin-top:8px;padding:12px}
+.opt.ok{border-color:#16a34a;background:rgba(22,163,74,.18)}.opt.bad{border-color:var(--danger);background:rgba(220,38,38,.15)}
+.good{color:#16a34a;font-weight:800;font-size:20px}.badt{color:var(--danger);font-weight:800;font-size:20px}
+label.fb{position:relative;display:inline-block;overflow:hidden;font-weight:600;border:1.5px solid var(--acc);color:var(--acc);border-radius:10px;padding:8px 14px;cursor:pointer}
+label.fb input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0}
+#stats ol{margin:4px 0 10px;padding-inline-start:22px}
 </style>
 </head>
 <body>
@@ -62,39 +79,47 @@ select.cls option{background:var(--card);color:var(--ink)}
 
 <details class="add" open>
 <summary>➕ أضف كلمة</summary>
-<p class="hint">الصق الشرح كامل من ChatGPT (النطق، المعنى، الأمثلة، الكلمات المرتبطة...). السطر الأول لازم يبدأ بالكلمة. تكدر تلصق أكثر من كلمة وتفصل بينها بسطر فيه <b dir="ltr">---</b></p>
 <textarea id="paste" placeholder="اكتب الي يجي على بالك و رح تگدر ترجعلو شوكت متريد"></textarea>
-<div class="bar"><button id="add">احفظ</button></div>
+<div class="bar"><button id="add">احفظ</button><button class="alt" id="pr">📋 انسخ برومبت الشرح</button></div>
 <p class="hint" id="msg" role="status"></p>
 </details>
 
+<div id="panel"></div>
 <div class="search"><input id="q" type="search" placeholder="ابحث بالعربي أو الإنجليزي بأي مكان من الشرح..." autocomplete="off"></div>
+<div class="tb"><button id="qz">🧠 مراجعة</button><button class="alt" id="acc">🇬🇧</button></div>
+<div class="chips" id="chips2"></div>
 <div class="chips" id="chips"></div>
 <div class="cnt" id="cnt"></div>
 <div id="list"></div>
 <div class="empty" id="empty" hidden>ماكو كلمات بعد. الصق أول شرح فوق.</div>
 
-<details class="add">
+<details class="add"><summary>📊 إحصائياتي</summary><div id="stats"></div></details>
+<details class="add"><summary>🌙 المظهر</summary><div class="bar"><select id="th" aria-label="المظهر"><option value="auto">تلقائي</option><option value="light">فاتح</option><option value="dark">داكن</option><option value="green">أخضر</option></select></div></details>
+<details class="add" id="bkd">
 <summary>🔗 مشاركة ونسخة احتياطية</summary>
-<p class="hint">«شارك الدفتر» يرسل كل الكلمات كنص. اللي يستلمه يلصقه بخانة «أضف كلمة» أو هنا ويضغط استرجاع. البيانات محفوظة بهذا المتصفح، فاحتفظ بنسخة بقناتك.</p>
+<p class="hint">«اعمل نسخة» تحفظ كل شي (المفضلة وتقدم المراجعة). «شارك الدفتر» يرسل الكلمات كنص. التصدير والاستيراد كملف يشتغلون بالمتصفح (Chrome) وممكن ما يشتغلون داخل تطبيق Claude، وبهالحالة استخدم انسخ والصق. البيانات محفوظة بهذا المتصفح فقط.</p>
 <textarea id="bak" dir="ltr" style="min-height:90px"></textarea>
 <div class="bar"><button id="shall">شارك الدفتر</button><button class="alt" id="mk">اعمل نسخة</button><button class="alt" id="cp">انسخ</button><button id="rs">استرجاع</button></div>
+<div class="bar"><button class="alt" id="ex">⬇️ تصدير ملف</button><label class="fb">⬆️ استيراد ملف<input type="file" id="imp" accept=".json,.txt,text/plain,application/json"></label></div>
 </details>
 <div id="toast" role="status"></div>
 </div>
 <div id="dlg"><div><p id="dm"></p><div class="bar"><button id="dy">نعم</button><button class="alt" id="dn">لا</button></div></div></div>
+<div id="quiz"></div>
 <div id="ov"><img alt=""></div>
 <script>
 var $=function(i){return document.getElementById(i)};
-var last=null,POS={noun:"اسم",verb:"فعل",adj:"صفة",adv:"ظرف/حال",pron:"ضمير",prep:"حرف جر",conj:"روابط"},flt="",words=[],open={},editId=null,imgFor=null,db=null,timer=null;
+var cfg={acc:"en-GB",theme:"auto",days:[]},view="",qq=null,last=null,POS={noun:"اسم",verb:"فعل",adj:"صفة",adv:"ظرف/حال",pron:"ضمير",prep:"حرف جر",conj:"روابط"},flt="",words=[],open={},editId=null,imgFor=null,db=null,timer=null;
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
 var tt=null;
 function say(t){$("msg").textContent=t;if(!t)return;var e=$("toast");e.textContent=t;e.style.display="block";clearTimeout(tt);tt=setTimeout(function(){e.style.display="none"},2500)}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function norm(s){return String(s).toLowerCase().replace(/[\u064B-\u0652\u0640]/g,"").replace(/[إأآ]/g,"ا").replace(/ى/g,"ي").replace(/ة/g,"ه")}
 function openDB(cb){try{var r=indexedDB.open("vocab-cards",1);r.onupgradeneeded=function(){r.result.createObjectStore("kv")};r.onsuccess=function(){db=r.result;cb()};r.onerror=function(){cb()}}catch(e){cb()}}
-function load(cb){if(!db)return cb();try{var g=db.transaction("kv").objectStore("kv").get("words");g.onsuccess=function(){if(g.result){words=g.result;words.forEach(function(w){if(w.pos===undefined)setPos(w)})}cb()};g.onerror=cb}catch(e){cb()}}
-function save(){clearTimeout(timer);timer=setTimeout(function(){if(!db){say("الحفظ مو متاح بهذا المتصفح.");return}try{db.transaction("kv","readwrite").objectStore("kv").put(words,"words")}catch(e){say("تعذّر الحفظ.")}},400)}
+function load(cb){if(!db)return cb();try{var tx=db.transaction("kv"),st=tx.objectStore("kv"),g=st.get("words"),c=st.get("cfg");c.onsuccess=function(){if(c.result)for(var k in c.result)cfg[k]=c.result[k]};g.onsuccess=function(){if(g.result){words=g.result;words.forEach(function(w){if(w.pos===undefined||(!w.man&&(!w.pos||w.guess)))setPos(w)})}};tx.oncomplete=function(){cb()};tx.onerror=function(){cb()}}catch(e){cb()}}
+function save(){clearTimeout(timer);timer=setTimeout(function(){if(!db){say("الحفظ مو متاح بهذا المتصفح.");return}try{var st=db.transaction("kv","readwrite").objectStore("kv");st.put(words,"words");st.put(cfg,"cfg")}catch(e){say("تعذّر الحفظ.")}},400)}
+function speak(t){try{if(!window.speechSynthesis)throw 0;speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);u.lang=cfg.acc;u.rate=0.9;var v=speechSynthesis.getVoices().filter(function(x){return x.lang.replace("_","-")===cfg.acc});if(v.length)u.voice=v[0];u.onerror=function(){say("النطق ما اشتغل. تأكد من محرك الصوت الإنجليزي بجهازك.")};speechSynthesis.speak(u)}catch(e){say("النطق مو متاح بهذا الجهاز أو التطبيق.")}}
+function applyTheme(){var h=document.documentElement,t=cfg.theme||"auto";if(t==="auto")h.removeAttribute("data-theme");else h.setAttribute("data-theme",t);$("th").value=t}
 function headword(t){
   var l=t.split(/\r?\n/)[0].replace(/[\u{1F1E6}-\u{1F1FF}\u{1F300}-\u{1FAFF}\u2600-\u27BF]/gu,"").replace(/[*#]/g,"").trim();
   var i=l.indexOf("/");if(i>0)l=l.slice(0,i);
@@ -111,22 +136,36 @@ var PREP=/^(in|on|at|by|for|with|from|to|of|about|over|under|between|through|dur
 var CONJ=/^(and|but|or|so|yet|nor|because|although|though|while|whereas|if|unless|since|however|therefore|moreover|furthermore|nevertheless|otherwise|whether|once|hence|thus)$/;
 function detectPos(t,word){
   var m=t.match(/(?:نوع الكلمة|التصنيف|القواعد|part of speech)\s*[:：-]?[^\n]*?(حرف جر|حرف عطف|أداة ربط|روابط|رابط|ضمير|صفة|ظرف|حال|فعل|اسم|pronoun|preposition|conjunction|connector|adjective|adverb|noun|verb|adj|adv)/i);
-  if(m){var k=m[1].toLowerCase();var v=AR[m[1]]||EN[k];if(v)return{pos:v,guess:false}}
-  m=t.toLowerCase().match(/\b(noun|verb|adjective|adverb|pronoun|preposition|conjunction|adj|adv)\b/);
-  if(m)return{pos:EN[m[1]],guess:false};
-  var w=(word||"").toLowerCase().split(/\s+/)[0];
-  if(/^[a-z'-]+$/.test(w)){
-    if(PRON.test(w))return{pos:"pron",guess:true};
-    if(PREP.test(w))return{pos:"prep",guess:true};
-    if(CONJ.test(w))return{pos:"conj",guess:true};
-    if(/ly$/.test(w))return{pos:"adv",guess:true};
-    if(/(ful|ous|ive|able|ible|less|ish|ic|al|ant|ent)$/.test(w))return{pos:"adj",guess:true};
-    if(/(tion|sion|ment|ness|ity|ance|ence|ism|ist)$/.test(w))return{pos:"noun",guess:true};
-    if(/(ize|ise|ify)$/.test(w))return{pos:"verb",guess:true};
+  if(m){var k=m[1].toLowerCase(),v=AR[m[1]]||EN[k];if(v)return{pos:v,guess:false}}
+  var ls=t.split(/\r?\n/);
+  for(var i=0;i<ls.length;i++){if(ls[i].length<40){var x=ls[i].toLowerCase().match(/\b(noun|verb|adjective|adverb|pronoun|preposition|conjunction)\b/);if(x)return{pos:EN[x[1]],guess:false}}}
+  var ws=(word||"").toLowerCase().trim().split(/\s+/),w=ws[0],g=function(p){return{pos:p,guess:true}};
+  if(!/^[a-z'-]+$/.test(w))return{pos:"",guess:false};
+  if(ws.length>1){
+    if(w==="to"||/^(up|out|off|on|in|down|over|away|back|about|for|with|at|into|through|along|around)$/.test(ws[ws.length-1]))return g("verb");
+  }else{
+    if(PRON.test(w))return g("pron");
+    if(PREP.test(w))return g("prep");
+    if(CONJ.test(w))return g("conj");
   }
-  return{pos:"",guess:false};
+  var k=ws[ws.length-1];
+  if(k.length>4&&/ly$/.test(k))return g("adv");
+  if(/(tion|sion|ment|ness|ity|ance|ence|ism|ist|ship|hood|dom|age|ure)$/.test(k))return g("noun");
+  if(/(ful|ous|ive|able|ible|less|ish|ic|ical|al|ant|ent|ary|ory|like)$/.test(k))return g("adj");
+  if(/(ing|er|or)$/.test(k))return g("noun");
+  if(/(ize|ise|ify|ate)$/.test(k))return g("verb");
+  var mn=(preview(t)||"").split(/[\/،,]/)[0].trim().split(/\s+/)[0]||"";
+  if(/^ي[\u0621-\u064A]{3,}/.test(mn))return g("verb");
+  if(/^ال/.test(mn))return g("noun");
+  if(/(\u064B\u0627|\u0627\u064B)$/.test(mn))return g("adv");
+  if(mn.length>=4&&/ي$/.test(mn))return g("adj");
+  if(k.length>3&&/y$/.test(k))return g("adj");
+  return g("noun");
 }
 function setPos(w){var d=detectPos(w.text,w.word);w.pos=d.pos;w.guess=d.guess}
+function newWord(t){var w={id:uid(),word:headword(t),text:t,fav:false,box:0,due:0,rev:0,miss:0,at:Date.now()};setPos(w);return w}
+function dkey(d){return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
+function streak(){var set={};(cfg.days||[]).forEach(function(k){set[k]=1});var d=new Date(),c=0;if(!set[dkey(d)])d.setDate(d.getDate()-1);while(set[dkey(d)]){c++;d.setDate(d.getDate()-1)}return c}
 function hlText(s,q){
   var h=esc(s);if(!q)return h;
   var n=norm(s),i=n.indexOf(q);
@@ -141,21 +180,30 @@ function body(t,q){
     return '<div class="l'+(k&&i>0?" k":"")+'" dir="auto">'+s+'</div>';
   }).join("");
 }
+function pass(w){return(!flt||(flt==="none"?!w.pos:w.pos===flt))&&(!view||w.fav)}
+function chips(arr,cur,at){return arr.map(function(t){return '<button class="chip'+(cur===t[0]?" on":"")+'" '+at+'="'+esc(t[0])+'">'+esc(t[1])+'</button>'}).join("")}
+function dueN(){var n=Date.now();return words.filter(function(w){return(w.due||0)<=n}).length}
+function renderStats(){
+  var c={},fv=0;words.forEach(function(w){var k=w.pos||"none";c[k]=(c[k]||0)+1;if(w.fav)fv++});
+  var top=words.filter(function(w){return w.rev>0}).sort(function(a,b){return b.rev-a.rev}).slice(0,5);
+  var bad=words.filter(function(w){return w.miss>0}).sort(function(a,b){return b.miss-a.miss}).slice(0,5);
+  function ol(a,k,u){return a.length?'<ol>'+a.map(function(w){return '<li><span dir="ltr">'+esc(w.word)+'</span> — '+w[k]+' '+u+'</li>'}).join("")+'</ol>':'<p class="hint">لسا ماكو بيانات. ابدأ مراجعة.</p>'}
+  $("stats").innerHTML='<p>إجمالي الكلمات: <b>'+words.length+'</b> · المفضلة: <b>'+fv+'</b> · 🔥 سلسلة المراجعة: <b>'+streak()+'</b> يوم</p><div class="bar">'+Object.keys(POS).concat(["none"]).map(function(k){return c[k]?'<span class="pos '+k+'">'+(POS[k]||"غير مصنف")+': '+c[k]+'</span>':""}).join("")+'</div><b>أكثر الكلمات اللي راجعتها</b>'+ol(top,"rev","مرة")+'<b>تحتاج مراجعة أكثر</b>'+ol(bad,"miss","خطأ");
+}
 function render(){
   var q=norm($("q").value.trim()),out="",n=0;
   words.forEach(function(w){
+    if(!pass(w))return;
     if(q&&norm(w.text).indexOf(q)<0)return;
-    if(flt&&(flt==="none"?w.pos:w.pos!==flt))return;
     n++;
     var isOpen=!!open[w.id]||(q&&true);
-    out+='<div class="card"><div class="hd" tabindex="0" role="button" data-t="'+w.id+'"><span class="w">'+hlText(w.word,q)+'</span><span class="m" dir="auto">'+esc(preview(w.text))+'</span>'+(w.pos?'<span class="pos '+w.pos+'">'+POS[w.pos]+'</span>':'')+'</div>';
+    out+='<div class="card '+(w.pos||"")+'"><div class="hd" tabindex="0" role="button" data-t="'+w.id+'"><span class="w">'+hlText(w.word,q)+'</span><span class="m" dir="auto">'+esc(preview(w.text))+'</span>'+(w.pos?'<span class="pos '+w.pos+'">'+POS[w.pos]+'</span>':'')+(w.fav?'⭐':'')+'<button class="ic" data-sp="'+w.id+'" aria-label="نطق">🔊</button></div>';
     if(isOpen){
       out+='<div class="bd">';
       if(editId===w.id){
         out+='<textarea id="ed" style="margin-top:10px">'+esc(w.text)+'</textarea><div class="bar"><button data-sv="'+w.id+'">حفظ التعديل</button><button class="alt" data-cn="1">إلغاء</button></div>';
       }else{
-        out+=body(w.text,q);
-        out+=(w.guess?'<div class="hint">التصنيف تخمين من شكل الكلمة. غيّره إذا غلط.</div>':'')+'<div class="bar"><button class="alt" data-ed="'+w.id+'">تعديل</button><button class="alt" data-cp="'+w.id+'">نسخ</button><select class="cls" data-ps="'+w.id+'" aria-label="التصنيف"><option value="" selected hidden>التصنيف</option>'+Object.keys(POS).map(function(k){return '<option value="'+k+'">'+(w.pos===k?'✓ ':'')+POS[k]+'</option>'}).join("")+'<option value="none">'+(w.pos?'':'✓ ')+'غير مصنف</option></select><button class="dg" data-dl="'+w.id+'">حذف</button></div>';
+        out+=body(w.text,q)+(w.guess?'<div class="hint">التصنيف تخمين من شكل الكلمة. غيّره إذا غلط.</div>':'')+'<div class="bar"><button class="alt" data-ed="'+w.id+'">تعديل</button><button class="alt" data-cp="'+w.id+'">نسخ</button><select class="cls" data-ps="'+w.id+'" aria-label="التصنيف"><option value="" selected hidden>التصنيف</option>'+Object.keys(POS).map(function(k){return '<option value="'+k+'">'+(w.pos===k?'✓ ':'')+POS[k]+'</option>'}).join("")+'<option value="none">'+(w.pos?'':'✓ ')+'غير مصنف</option></select><button class="alt" data-fv="'+w.id+'">'+(w.fav?'★ مفضلة':'☆ مفضلة')+'</button><button class="dg" data-dl="'+w.id+'">حذف</button></div>';
       }
       out+='</div>';
     }
@@ -164,55 +212,15 @@ function render(){
   $("list").innerHTML=out;
   $("empty").hidden=words.length>0;
   $("total").textContent=words.length?words.length+" كلمة":"";
-  var tabs=[["","الكل"],["noun","اسم"],["verb","فعل"],["adj","صفة"],["adv","ظرف/حال"],["pron","ضمير"],["prep","حرف جر"],["conj","روابط"],["none","غير مصنف"]];
-  $("chips").innerHTML=tabs.map(function(t){return '<button class="chip'+(flt===t[0]?" on":"")+'" data-f="'+t[0]+'">'+t[1]+'</button>'}).join("");
-  $("cnt").textContent=q?("النتائج: "+n):"";
+  $("chips2").innerHTML=chips([["","الكل"],["fav","⭐ المفضلة"]],view,"data-v");
+  $("chips").innerHTML=chips([["","كل الأنواع"],["noun","اسم"],["verb","فعل"],["adj","صفة"],["adv","ظرف/حال"],["pron","ضمير"],["prep","حرف جر"],["conj","روابط"],["none","غير مصنف"]],flt,"data-f");
+  $("cnt").textContent=(q||flt||view)?("النتائج: "+n):"";
+  $("panel").innerHTML=words.length?'<div class="panel"><div>🔥 سلسلة المراجعة: <b>'+streak()+'</b> يوم</div><div>عندك <b>'+dueN()+'</b> كلمة للمراجعة اليوم</div><div class="bar"><button id="qz2">ابدأ جلسة مراجعة سريعة</button></div></div>':"";
+  $("acc").textContent=cfg.acc==="en-GB"?"🇬🇧 بريطاني":"🇺🇸 أمريكي";
+  renderStats();
 }
 var dcb=null;
 function ask(m,cb){$("dm").textContent=m;dcb=cb;$("dlg").style.display="flex";$("dn").focus()}
 $("dy").onclick=function(){$("dlg").style.display="none";var f=dcb;dcb=null;if(f)f()};
 $("dn").onclick=function(){$("dlg").style.display="none";dcb=null};
-function find(id){for(var i=0;i<words.length;i++)if(words[i].id===id)return i;return -1}
-$("add").onclick=function(){
-  var raw=$("paste").value.trim();if(!raw){say("الصق الشرح أول.");return}
-  var parts=raw.split(/^\s*-{3,}\s*$/m).map(function(x){return x.trim()}).filter(Boolean);
-  parts.reverse().forEach(function(p){var nw={id:uid(),word:headword(p),text:p,imgs:[]};setPos(nw);words.unshift(nw)});
-  save();$("paste").value="";render();say("انحفظت "+parts.length+" كلمة");
-};
-$("q").oninput=render;
-$("list").onclick=function(e){
-  var t=e.target,b;
-  if(b=t.closest("[data-sv]")){var w=words[find(b.dataset.sv)];w.text=$("ed").value;w.word=headword(w.text);setPos(w);editId=null;save();render();return}
-  if(t.closest("[data-cn]")){editId=null;render();return}
-  if(b=t.closest("[data-ed]")){editId=b.dataset.ed;render();return}
-  if(b=t.closest("[data-dl]")){var i=find(b.dataset.dl);ask("حذف «"+words[i].word+"»؟",function(){words.splice(find(b.dataset.dl),1);save();render()});return}
-  if(b=t.closest("[data-cp]")){copyText(words[find(b.dataset.cp)].text,"اننسخت الكلمة");return}
-  if(b=t.closest("[data-sh]")){shareText(words[find(b.dataset.sh)].text);return}
-  if(b=t.closest(".hd")){open[b.dataset.t]=!open[b.dataset.t];if(open[b.dataset.t])last=b.dataset.t;render()}
-};
-$("list").onkeydown=function(e){if((e.key==="Enter"||e.key===" ")&&e.target.classList.contains("hd")){e.preventDefault();e.target.click()}};
-$("chips").onclick=function(e){var b=e.target.closest(".chip");if(!b)return;flt=b.dataset.f;render()};
-function copyText(t,msg){
-  function fb(){var a=document.createElement("textarea");a.value=t;a.style.position="fixed";a.style.opacity="0";document.body.appendChild(a);a.select();try{document.execCommand("copy");say(msg)}catch(e){say("تعذّر النسخ.")}document.body.removeChild(a)}
-  try{navigator.clipboard.writeText(t).then(function(){say(msg)},fb)}catch(e){fb()}
-}
-function shareText(t){
-  if(navigator.share){navigator.share({text:t}).catch(function(){copyText(t,"المشاركة مو متاحة هنا، اننسخ النص وتكدر تلصقه بأي مكان")})}
-  else copyText(t,"المشاركة مو متاحة هنا، اننسخ النص وتكدر تلصقه بأي مكان");
-}
-$("list").onchange=function(e){
-  var s=e.target.closest("[data-ps]");if(!s||!s.value)return;var w=words[find(s.dataset.ps)];w.pos=s.value==="none"?"":s.value;w.guess=false;save();render()};
-$("ov").onclick=function(){this.style.display="none"};
-$("mk").onclick=function(){$("bak").value=words.map(function(w){return w.text}).join("\n---\n")};
-$("shall").onclick=function(){if(!words.length){say("ماكو كلمات للمشاركة.");return}shareText(words.map(function(w){return w.text}).join("\n---\n"))};
-$("cp").onclick=function(){var t=$("bak");if(!t.value)$("mk").click();copyText(t.value,"اننسخ الدفتر")};
-$("rs").onclick=function(){
-  var raw=$("bak").value.trim(),d;
-  try{d=JSON.parse(raw);if(!Array.isArray(d))throw 0}catch(e){d=raw.split(/^\s*-{3,}\s*$/m).map(function(x){return x.trim()}).filter(Boolean)}
-  if(!d.length){say("الصق النسخة أول.");return}
-  ask("يضيف "+d.length+" كلمة للموجودة. تكمل؟",function(){d.forEach(function(t){if(typeof t!=="string")return;var nw={id:uid(),word:headword(t),text:t,imgs:[]};setPos(nw);words.push(nw)});save();render();say("انضافت "+d.length+" كلمة")});
-};
-openDB(function(){load(render)});
-</script>
-</body>
-</html>
+function find(id){for(var i=0;i<words.length;i++)if(words[i].id===id)return 
