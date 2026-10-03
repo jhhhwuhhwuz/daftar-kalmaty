@@ -3,18 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>دفتر كلماتي الذكي</title>
+<title>دفتر كلماتي + idioms (تجريبي)</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="wrap">
-<h1>دفتر كلماتي<small id="total"></small></h1>
+<div class="tabs"><button class="tab on" id="tw"><span class="ti">📒</span> دفتر كلماتي</button><button class="tab" id="ti"><span class="ti">💬</span> idioms</button></div>
 
 <details class="add" open>
-<summary>➕ أضف كلمة</summary>
+<summary id="sm">➕ أضف كلمة</summary>
 <textarea id="paste" placeholder="اكتب الي يجي على بالك و رح تگدر ترجعلو شوكت متريد"></textarea>
-<div class="bar"><button id="add">احفظ</button><button class="alt" id="pr">📋 انسخ برومبت الشرح</button></div>
+<div class="bar"><button id="add">احفظ</button></div>
 <p class="hint" id="msg" role="status"></p>
 </details>
 
