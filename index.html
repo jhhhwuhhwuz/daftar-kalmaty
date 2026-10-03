@@ -9,7 +9,7 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>دفتر كلماتي</title>
 <style>
-:root{--bg:#0b1220;--card:#172131;--line:#2a3950;--text:#eef3fb;--muted:#9aa8bb;--accent:#6d9df7;--field:#101a2a;--verb:#4ade80;--noun:#60a5fa;--adj:#c084fc;--adv:#fbbf24;--prep:#fb7185;--pronoun:#22d3ee;--link:#a78bfa;--other:#94a3b8}
+:root{--bg:#0b1220;--card:#172131;--line:#2a3950;--text:#eef3fb;--muted:#9aa8bb;--accent:#6d9df7;--field:#101a2a;--red:#ef4444;--blue:#3b82f6;--yellow:#eab308;--green:#22c55e;--pink:#ec4899;--orange:#f97316;--brown:#92400e}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif}
 .wrap{max-width:760px;margin:auto;padding:22px 16px 50px}.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
 h1{font-size:28px;margin:0}.count{color:var(--muted);font-size:14px;margin-right:10px}.panel,.word{background:var(--card);border:1px solid var(--line);border-radius:18px}
@@ -19,24 +19,16 @@ textarea{min-height:280px;resize:vertical;line-height:1.8}textarea:focus,input:f
 .writebar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}.writebar label{margin:0}
 .expandBtn{width:40px;height:36px;padding:0;background:#223047;color:var(--text);font-size:22px;line-height:1}
 .writing-panel.expanded textarea{min-height:500px}.writing-panel.expanded .extra-controls{display:none}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.row{display:grid;grid-template-columns:1fr;gap:10px;margin-top:10px}.category-row{display:flex;align-items:end;gap:10px}.category-label{flex:1}.select-box{width:190px;border-left:1px solid var(--line);padding-left:10px}.select-box select{min-height:52px}
 button{border:0;border-radius:12px;padding:11px 16px;font:inherit;cursor:pointer}.primary{background:var(--accent);color:#07111f;font-weight:700;margin-top:12px;width:100%}
 .search{margin:12px 0}.chips{display:flex;gap:8px;overflow:auto;padding:4px 0 12px}.chip{white-space:nowrap;background:transparent;color:var(--muted);border:1px solid var(--line);padding:8px 13px}.chip.active{color:var(--text);border-color:var(--accent)}
-.word{padding:17px;margin:10px 0}.wordhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:1px solid var(--line);padding-bottom:12px}
-.title{font-size:23px;font-weight:800;line-height:1.3}.content{font-size:16px;line-height:1.85;margin-top:13px;white-space:pre-wrap}
-.tag{border-radius:20px;padding:5px 11px;font-size:12px;font-weight:700;white-space:nowrap}
-.tag-فعل{background:color-mix(in srgb,var(--verb) 18%,transparent);color:var(--verb);border:1px solid var(--verb)}
-.tag-اسم{background:color-mix(in srgb,var(--noun) 18%,transparent);color:var(--noun);border:1px solid var(--noun)}
-.tag-صفة{background:color-mix(in srgb,var(--adj) 18%,transparent);color:var(--adj);border:1px solid var(--adj)}
-.tag-ظرف-حال{background:color-mix(in srgb,var(--adv) 18%,transparent);color:var(--adv);border:1px solid var(--adv)}
-.tag-حرف-جر{background:color-mix(in srgb,var(--prep) 18%,transparent);color:var(--prep);border:1px solid var(--prep)}
-.tag-ضمير{background:color-mix(in srgb,var(--pronoun) 18%,transparent);color:var(--pronoun);border:1px solid var(--pronoun)}
-.tag-روابط{background:color-mix(in srgb,var(--link) 18%,transparent);color:var(--link);border:1px solid var(--link)}
-.tag-غير-مصنف{background:color-mix(in srgb,var(--other) 18%,transparent);color:var(--other);border:1px solid var(--other)}
+.word{padding:17px;margin:10px 0;cursor:pointer}.word.open{cursor:default}.wordhead{display:flex;justify-content:flex-start;align-items:flex-start;gap:12px;border-bottom:1px solid var(--line);padding-bottom:12px}
+.title{font-size:23px;font-weight:900;line-height:1.3;color:#60a5fa}.content{font-size:16px;line-height:1.85;margin-top:13px;white-space:pre-wrap}
+.saved-layout{display:grid;grid-template-columns:minmax(150px,.8fr) minmax(0,1.6fr);gap:18px;margin-top:15px}.saved-left{direction:ltr;text-align:left;border-left:1px solid var(--line);padding-left:16px}.saved-word{font-size:25px;font-weight:900;color:#60a5fa;word-break:break-word}.pron{font-size:16px;color:var(--muted);margin-top:10px;direction:ltr}.saved-right{direction:rtl;text-align:right}.saved-right .content{margin-top:0}.saved-tools{margin-top:14px}.saved-tools label{margin-top:0}
+.categorySelect{font-weight:700}.cat-غير-مصنف{color:var(--brown);border-color:var(--brown)}.cat-ضمير{color:var(--red);border-color:var(--red)}.cat-فعل{color:var(--blue);border-color:var(--blue)}.cat-اسم{color:var(--yellow);border-color:var(--yellow)}.cat-صفة{color:var(--green);border-color:var(--green)}.cat-ظرف-حال{color:var(--pink);border-color:var(--pink)}.cat-حرف-جر{color:var(--orange);border-color:var(--orange)}.cat-روابط{color:var(--brown);border-color:var(--brown)}
 .actions{display:flex;gap:8px;margin-top:13px}.small{background:#223047;color:var(--text);padding:8px 11px}.del{background:#3a2026;color:#ffaaaa}
-.empty{color:var(--muted);text-align:center;padding:30px}.note{color:var(--muted);font-size:12px;line-height:1.6;margin-top:8px}
-#installBtn{display:none;margin-top:10px;background:#263d62;color:#fff;width:100%}
-@media(max-width:520px){.row{grid-template-columns:1fr}h1{font-size:25px}}
+.empty{color:var(--muted);text-align:center;padding:30px}#installBtn{display:none;margin-top:10px;background:#263d62;color:#fff;width:100%}
+@media(max-width:520px){.category-row{align-items:end}.select-box{width:175px}.saved-layout{grid-template-columns:1fr;gap:12px}.saved-left{border-left:0;border-bottom:1px solid var(--line);padding:0 0 12px;text-align:left}h1{font-size:25px}}
 </style>
 </head>
 <body>
@@ -44,27 +36,24 @@ button{border:0;border-radius:12px;padding:11px 16px;font:inherit;cursor:pointer
 <div class="top"><h1>دفتر كلماتي <span class="count" id="count"></span></h1><div>📖</div></div>
 
 <section class="panel writing-panel" id="writingPanel">
-<h2>📝 ورقة جديدة</h2>
+<h2 style="text-align:center">📝 ورقة جديدة</h2>
 <div class="writebar">
 <label for="content">اكتب ما يخطر في بالك فالحياة لا تتوقف</label>
 <button class="expandBtn" id="expandBtn" type="button" title="مساحة أكبر" onclick="toggleExpand()">−</button>
 </div>
-<textarea id="content" placeholder="اكتب جملة، فكرة، شرح كامل، ملاحظة...
-
-الكلمة الأولى التي تكتبها ستصبح عنوان هذه الورقة تلقائياً."></textarea>
+<textarea id="content" placeholder="write your thoughts here...."></textarea>
 <div class="extra-controls">
 <div class="row">
-<div>
-<label>التصنيف</label>
-<select id="cat">
+<div class="category-row">
+<div class="category-label"><label>التصنيف</label></div>
+<div class="select-box"><select id="cat">
 <option>غير مصنف</option><option>ضمير</option><option>فعل</option><option>اسم</option><option>صفة</option><option>ظرف/حال</option><option>حرف جر</option><option>روابط</option>
-</select>
+</select></div>
 </div>
 </div>
 <button class="primary" onclick="addNote()">حفظ الورقة</button>
 </div>
 <button id="installBtn" onclick="installApp()">📲 إضافة دفتر كلماتي إلى الشاشة الرئيسية</button>
-<div class="note">الكلمة الأولى من النص تصبح عنوان الورقة، وباقي النص يبقى كمحتوى كامل.</div>
 </section>
 
 <input class="search" id="search" placeholder="🔎 ابحث في ملاحظاتك..." oninput="render()">
@@ -79,42 +68,57 @@ const oldSeed=[
 
 function migrateData(){
 const raw=JSON.parse(localStorage.getItem("myWords")||"null");
-if(!raw)return oldSeed.map(w=>({title:w.en,content:`${w.ar}\n\n${w.note}${w.pron?`\n\nالنطق: ${w.pron}`:""}`,cat:w.cat}));
+if(!raw)return oldSeed.map(w=>({title:w.en,content:w.ar+"\n\n"+w.note+(w.pron?"\n\nالنطق: "+w.pron:""),cat:w.cat}));
 return raw.map(w=>{
 if(w.title!==undefined)return w;
 const title=(w.en||"ملاحظة").trim().split(/\s+/)[0]||"ملاحظة";
-const parts=[w.ar,w.note,w.pron?`النطق: ${w.pron}`:""].filter(Boolean);
+const parts=[w.ar,w.note,w.pron?"النطق: "+w.pron:""].filter(Boolean);
 return {title,content:parts.join("\n\n"),cat:w.cat||"غير مصنف"};
 });
 }
-let words=migrateData(),active="الكل",deferredPrompt=null;
-save();
+let words=migrateData(),active="الكل",deferredPrompt=null,openNote=-1;
 function save(){localStorage.setItem("myWords",JSON.stringify(words))}
 function addNote(){
 const text=document.getElementById("content").value.trim(),category=document.getElementById("cat").value;
 if(!text){alert("اكتب شيئاً أولاً");return}
 const title=text.split(/\s+/)[0]||"ملاحظة";
-words.unshift({title,content:text,cat:category});save();
-document.getElementById("content").value="";render();
+words.unshift({title,content:text,cat:category});save();document.getElementById("content").value="";render();
 }
-function del(i){words.splice(i,1);save();render()}
+function del(i){words.splice(i,1);if(openNote===i)openNote=-1;save();render()}
+function toggleCard(i){openNote=openNote===i?-1:i;render()}
+function extractPronunciation(text){
+const m=text.match(/النطق\s*:\s*([^\n]+)/i);
+return m?m[1].trim():"";
+}
+function contentWithoutPronunciation(text){
+return text.split("\n").filter(line=>!/^\s*النطق\s*:/i.test(line)).join("\n").trim();
+}
+function categoryClass(cat){
+return "cat-"+String(cat).replace(/\s+/g,"-").replace(/[\/\\]/g,"");
+}
+function changeCategory(i,value){words[i].cat=value||"غير مصنف";save();render()}
 function edit(i){
 const w=words[i],content=prompt("عدّل محتوى الورقة:",w.content);
 if(content===null)return;const trimmed=content.trim();if(!trimmed)return;
-w.content=trimmed;w.title=trimmed.split(/\s+/)[0]||"ملاحظة";
-const category=prompt("التصنيف (فعل، اسم، صفة، ضمير، ظرف/حال، حرف جر، روابط، غير مصنف):",w.cat||"غير مصنف");
-if(category!==null&&category.trim())w.cat=category.trim();save();render();
+w.content=trimmed;w.title=trimmed.split(/\s+/)[0]||"ملاحظة";save();render();
 }
-function slug(s){return String(s).replace(/\s+/g,"-").replace(/[\/\\]/g,"")}
-function tagClass(cat){return "tag-"+slug(cat)}
 function render(){
-const q=document.getElementById("search").value.toLowerCase(),cats=["الكل",...new Set(words.map(w=>w.cat||"غير مصنف"))];
+const q=(document.getElementById("search").value||"").trim().toLowerCase();
+const cats=["الكل",...new Set(words.map(w=>w.cat||"غير مصنف"))];
 document.getElementById("chips").innerHTML=cats.map(c=>`<button class="chip ${c===active?"active":""}" onclick="active=${JSON.stringify(c)};render()">${esc(c)}</button>`).join("");
 const shown=words.map((w,i)=>({w,i})).filter(x=>(active==="الكل"||x.w.cat===active)&&(!q||JSON.stringify(x.w).toLowerCase().includes(q)));
 document.getElementById("count").textContent=`${words.length} ورقة`;
-document.getElementById("list").innerHTML=shown.length?shown.map(({w,i})=>`
-<article class="word"><div class="wordhead"><div class="title">${esc(w.title||"ملاحظة")}</div><span class="tag ${tagClass(w.cat||"غير مصنف")}">${esc(w.cat||"غير مصنف")}</span></div>
-<div class="content">${esc(w.content||"")}</div><div class="actions"><button class="small" onclick="edit(${i})">تعديل</button><button class="del" onclick="del(${i})">حذف</button></div></article>`).join(""):`<div class="empty">ماكو ملاحظات مطابقة حالياً.</div>`;
+document.getElementById("list").innerHTML=shown.length?shown.map(({w,i})=>{
+const open=openNote===i,pron=extractPronunciation(w.content||""),body=contentWithoutPronunciation(w.content||"");
+const options=["غير مصنف","ضمير","فعل","اسم","صفة","ظرف/حال","حرف جر","روابط"].map(x=>`<option ${x===(w.cat||"غير مصنف")?"selected":""}>${esc(x)}</option>`).join("");
+return `<article class="word ${open?"open":""}" onclick="toggleCard(${i})">
+<div class="wordhead"><div class="title">${esc(w.title||"ملاحظة")}</div></div>
+${open?`<div class="saved-layout" onclick="event.stopPropagation()">
+<div class="saved-left"><div class="saved-word">${esc(w.title||"ملاحظة")}</div>${pron?`<div class="pron">${esc(pron)}</div>`:""}</div>
+<div class="saved-right"><div class="content">${esc(body)}</div>
+<div class="saved-tools"><label>التصنيف</label><select class="categorySelect ${categoryClass(w.cat||"غير مصنف")}" onchange="changeCategory(${i},this.value);event.stopPropagation()">${options}</select>
+<div class="actions"><button class="small" onclick="event.stopPropagation();edit(${i})">تعديل</button><button class="del" onclick="event.stopPropagation();del(${i})">حذف</button></div></div></div></div>`:""}</article>`;
+}).join(""):`<div class="empty">ماكو ملاحظات مطابقة حالياً.</div>`;
 }
 function toggleExpand(){
 const panel=document.getElementById("writingPanel"),btn=document.getElementById("expandBtn");
