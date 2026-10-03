@@ -63,3 +63,9 @@ select.cls option{background:var(--card);color:var(--ink)}
 label.fb{position:relative;display:inline-block;overflow:hidden;font-weight:600;border:1.5px solid var(--acc);color:var(--acc);border-radius:10px;padding:8px 14px;cursor:pointer}
 label.fb input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0}
 #stats ol{margin:4px 0 10px;padding-inline-start:22px}
+.tabs{display:flex;gap:10px;margin:4px 0 12px}
+.tab{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 8px;background:var(--card);color:var(--mute);border:1.5px solid var(--line);font-size:16px}
+.tab.on{color:var(--acc);border-color:var(--acc)}
+.tab .ti{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border:1.5px solid currentColor;border-radius:8px;font-size:16px;flex:0 0 auto}
+.pos.inf{color:#ea580c;border-color:#ea580c}.pos.frm{color:#2563eb;border-color:#2563eb}.pos.biz{color:#0d9488;border-color:#0d9488}.pos.emo{color:#db2777;border-color:#db2777}.pos.gen{color:#64748b;border-color:#64748b}
+.card.inf{border-inline-start:5px solid #ea580c}.card.frm{border-inline-start:5px solid #2563eb}.card.biz{border-inline-start:5px solid #0d9488}.card.emo{border-inline-start:5px solid #db2777}.card.gen{border-inline-start:5px solid #64748b}
