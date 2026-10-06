@@ -86,17 +86,15 @@ function body(t,q){
 }
 
 // ==========================================
-// دوال المزامنة (مع رسائل الفحص والتتبع)
+// دوال المزامنة مع المصادقة التلقائية
 // ==========================================
 async function syncToCloud() {
-    alert("تم ضغط الزر بنجاح!");
     try {
         var user = firebase.auth().currentUser;
         if (!user) {
-            alert("خطأ: التطبيق لا يرى أي مستخدم مسجل دخول حالياً!");
-            return;
+            var cred = await firebase.auth().signInAnonymously();
+            user = cred.user;
         }
-        alert("المستخدم مسجل، وجاري الرفع للسحابة...");
         var dbFs = firebase.firestore();
         await dbFs.collection("users").doc(user.uid).set({
             words: words,
@@ -104,16 +102,20 @@ async function syncToCloud() {
             lastSynced: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
         
-        alert("تمت المزامنة وحفظ البيانات في السحابة بنجاح!");
+        say("تمت المزامنة وحفظ البيانات في السحابة بنجاح!");
     } catch (e) {
-        alert("فشلت المزامنة بسبب خطأ: " + e.message);
+        say("فشلت المزامنة: " + e.message);
+        console.error(e);
     }
 }
 
 async function syncFromCloud() {
     try {
         var user = firebase.auth().currentUser;
-        if (!user) return;
+        if (!user) {
+            var cred = await firebase.auth().signInAnonymously();
+            user = cred.user;
+        }
         var dbFs = firebase.firestore();
         var doc = await dbFs.collection("users").doc(user.uid).get();
         if (doc.exists) {
