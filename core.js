@@ -86,24 +86,27 @@ function body(t,q){
 }
 
 // ==========================================
-// دوال المزامنة السحابية الجديدة (Firestore)
+// دوال المزامنة (مع رسائل الفحص والتتبع)
 // ==========================================
 async function syncToCloud() {
+    alert("تم ضغط الزر بنجاح!");
     try {
         var user = firebase.auth().currentUser;
         if (!user) {
-            say("يرجى تسجيل الدخول أولاً للمزامنة.");
+            alert("خطأ: التطبيق لا يرى أي مستخدم مسجل دخول حالياً!");
             return;
         }
+        alert("المستخدم مسجل، وجاري الرفع للسحابة...");
         var dbFs = firebase.firestore();
         await dbFs.collection("users").doc(user.uid).set({
             words: words,
             cfg: cfg,
             lastSynced: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
-        say("تمت المزامنة وحفظ البيانات في السحابة بنجاح!");
+        
+        alert("تمت المزامنة وحفظ البيانات في السحابة بنجاح!");
     } catch (e) {
-        say("فشلت المزامنة: " + e.message);
+        alert("فشلت المزامنة بسبب خطأ: " + e.message);
     }
 }
 
