@@ -84,3 +84,48 @@ function body(t,q){
     return '<div class="l'+(k&&i>0?" k":"")+'" dir="auto">'+s+'</div>';
   }).join("");
 }
+
+// ==========================================
+// دوال المزامنة السحابية الجديدة (Firestore)
+// ==========================================
+async function syncToCloud() {
+    try {
+        var user = firebase.auth().currentUser;
+        if (!user) {
+            say("يرجى تسجيل الدخول أولاً للمزامنة.");
+            return;
+        }
+        var dbFs = firebase.firestore();
+        await dbFs.collection("users").doc(user.uid).set({
+            words: words,
+            cfg: cfg,
+            lastSynced: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        say("تمت المزامنة وحفظ البيانات في السحابة بنجاح!");
+    } catch (e) {
+        say("فشلت المزامنة: " + e.message);
+    }
+}
+
+async function syncFromCloud() {
+    try {
+        var user = firebase.auth().currentUser;
+        if (!user) return;
+        var dbFs = firebase.firestore();
+        var doc = await dbFs.collection("users").doc(user.uid).get();
+        if (doc.exists) {
+            var data = doc.data();
+            if (data.words && Array.isArray(data.words)) {
+                words = data.words;
+            }
+            if (data.cfg) {
+                for (var k in data.cfg) { cfg[k] = data.cfg[k]; }
+            }
+            save();
+            if (typeof render === 'function') render();
+            say("تم جلب الكلمات من السحابة بنجاح!");
+        }
+    } catch (e) {
+        console.error("خطأ في جلب البيانات:", e);
+    }
+}
